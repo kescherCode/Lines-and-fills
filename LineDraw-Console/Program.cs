@@ -1,107 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using static System.Console;
+using static System.ConsoleKey;
 
 namespace LineDraw_Console
 {
-    internal struct Scalar2D
-    {
-        public double X;
-        public double Y;
-
-        public Scalar2D(double x = 0d, double y = 0d)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public double Length => Math.Sqrt(X * X + Y * Y);
-
-        public static Scalar2D operator *(double scale, Scalar2D x)
-        {
-            x.X *= scale;
-            x.Y *= scale;
-            return x;
-        }
-
-        public static Scalar2D operator /(double scale, Scalar2D x)
-        {
-            x.X /= scale;
-            x.Y /= scale;
-            return x;
-        }
-
-        public static Scalar2D operator -(Scalar2D left, Scalar2D right)
-        {
-            var p = new Scalar2D(left.X, left.Y);
-            p.X -= right.X;
-            p.Y -= right.Y;
-            return p;
-        }
-
-        public static Scalar2D operator +(Scalar2D left, Scalar2D right)
-        {
-            var p = new Scalar2D(left.X, left.Y);
-            p.X += right.X;
-            p.Y += right.Y;
-            return p;
-        }
-
-        public static bool operator ==(Scalar2D left, Scalar2D right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Scalar2D left, Scalar2D right)
-        {
-            return !left.Equals(right);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-                return false;
-
-            var scalar = (Scalar2D) obj;
-            return X.Equals(scalar.X) && Y.Equals(scalar.Y);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return (X.GetHashCode() * 397) ^ Y.GetHashCode();
-            }
-        }
-
-        // ReSharper disable once MemberCanBePrivate.Global
-        public bool Equals(Scalar2D scalar2D)
-        {
-            Scalar2D scalar = scalar2D;
-            return X.Equals(scalar.X) && Y.Equals(scalar.Y);
-        }
-    }
-
     internal struct Line
     {
-        private readonly Scalar2D A;
-        private readonly Scalar2D B;
+        public readonly (int X, int Y) A;
+        public readonly (int X, int Y) B;
 
-        public Line(Scalar2D a, Scalar2D b)
+        public Line((int X, int Y) a, (int X, int Y) b)
         {
             A = a;
             B = b;
         }
-
-        public (int X, int Y) CoordsToDraw(int percentage)
-        {
-            Scalar2D diff = A - B;
-            Scalar2D coords = A + percentage * diff;
-            return ((int) coords.X, (int) coords.Y);
-        }
     }
 
-    internal class Program
+    internal static class Program
     {
         private static void WriteStatus(string msg)
         {
@@ -114,36 +31,77 @@ namespace LineDraw_Console
 
         private static void Main(string[] args)
         {
-            var lines = new List<Line>();
+            try
+            {
+//            Thread.Sleep(3000);
+                var lines = new List<Line>();
 
-            ConsoleColor defaultBgColor = BackgroundColor;
-            ConsoleColor defaultFgColor = ForegroundColor;
+                ConsoleColor defaultBgColor = BackgroundColor;
+                ConsoleColor defaultFgColor = ForegroundColor;
 
-            bool done = false;
-            WriteStatus("Select points");
-            Scalar2D[] selection = {new Scalar2D(0, 0), new Scalar2D(0, 0)};
-            while (!done)
-                // ReSharper disable once SwitchStatementMissingSomeCases
-                switch (ReadKey(true).Key)
+                bool done = false;
+                (int X, int Y)[] selection = {(0, 0), (0, 0)};
+                while (!done)
                 {
-                    case ConsoleKey.D1:
-                        selection[0] = new Scalar2D(CursorLeft, CursorTop);
-                        break;
-                    case ConsoleKey.D2:
-                        selection[1] = new Scalar2D(CursorLeft, CursorTop);
-                        break;
-                    case ConsoleKey.Enter:
-                        done = true;
-                        break;
+                    WriteStatus("".PadLeft(WindowWidth));
+                    WriteStatus(
+                        $"Select points|C:{CursorLeft},{CursorTop}|A:{selection[0].X},{selection[0].Y}|B:{selection[1].X},{selection[1].Y}");
+                    // ReSharper disable once SwitchStatementMissingSomeCases
+                    switch (ReadKey(true).Key)
+                    {
+                        case D1:
+                            selection[0] = (CursorLeft, CursorTop);
+                            Console.Write("o");
+                            Console.SetCursorPosition(selection[0].X, selection[0].Y);
+                            break;
+                        case D2:
+                            selection[1] = (CursorLeft, CursorTop);
+                            Write("o");
+                            Console.SetCursorPosition(selection[1].X, selection[1].Y);
+                            break;
+                        case UpArrow:
+                            if (CursorTop > 0)
+                                CursorTop--;
+                            else CursorTop = WindowHeight - 2;
+                            break;
+                        case DownArrow:
+                            if (CursorTop < WindowHeight - 2)
+                                CursorTop++;
+                            else CursorTop = 0;
+                            break;
+                        case LeftArrow:
+                            if (CursorLeft > 0)
+                                CursorLeft--;
+                            else CursorLeft = WindowWidth - 1;
+                            break;
+                        case RightArrow:
+                            if (CursorLeft < WindowWidth - 1)
+                                CursorLeft++;
+                            else CursorLeft = 0;
+                            break;
+                        case Enter:
+                            lines.Add(new Line(selection[0], selection[1]));
+                            done = true;
+                            break;
+                    }
                 }
 
-            foreach (Line line in lines)
-                for (int i = 0; i < 101; i++)
-                {
-                    (int X, int Y) coords = line.CoordsToDraw(i);
-                    SetCursorPosition(coords.X, coords.Y);
-                    Write('+');
-                }
+                foreach (Line line in lines)
+                    for (double i = 0; i <= 1.001; i+=0.001)
+                    {
+                        Thread.Sleep(1);
+                        (int x, int y) = (line.B.X - line.A.X, line.B.Y - line.A.Y);
+                        (int X, int Y) = ((int)(line.A.X + i * x), (int)(line.A.Y + i * y));
+                        SetCursorPosition(X, Y);
+                        Write('+');
+                    }
+            }
+            catch (Exception e)
+            {
+                SetCursorPosition(0, 0);
+                WriteLine(e.Message);
+                WriteLine(e.StackTrace);
+            }
 
             ReadKey(true);
         }
