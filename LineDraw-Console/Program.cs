@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using static System.Console;
 using static System.ConsoleColor;
 using static System.ConsoleKey;
@@ -58,6 +55,7 @@ namespace LineDraw_Console
 
         private static void Automated(ref int[] args, int steps, bool delay)
         {
+            CursorVisible = false;
             var lines = new List<Line>();
 
             for (int i = 0; i < args.Length; i += 4)
@@ -67,30 +65,7 @@ namespace LineDraw_Console
                         (args[i + 2], args[i + 3])
                     ));
 
-            foreach (Line line in lines)
-            {
-                double step = 1.0 / steps;
-                // 2D vector between A and B
-                (double dx, double dy) = (
-                    line.B.X - line.A.X,
-                    line.B.Y - line.A.Y
-                );
-
-                for (double i = 0; i <= 1.01; i += step)
-                {
-                    // Calculate the coordinate according to the percentages
-                    (int x, int y) = (
-                        (int) Round(line.A.X + i * dx),
-                        (int) Round(line.A.Y + i * dy)
-                    );
-
-                    SetCursorPosition(x, y);
-                    Write('-');
-
-                    if (!delay) continue;
-                    Thread.Sleep(1000 / steps);
-                }
-            }
+            foreach (Line line in lines) DrawLine(line, steps, delay, ForegroundColor);
 
             ReadKey(true);
             Exit(0);
@@ -111,7 +86,7 @@ namespace LineDraw_Console
             while (!exit)
                 try
                 {
-                    var line = new Line((0, 0), (0, 0));
+                    var line = new Line((-1, -1), (-1, -1));
                     bool done = false;
                     while (!done)
                     {
@@ -123,6 +98,7 @@ namespace LineDraw_Console
                             $"Delay:{delay}|" +
                             $"Steps:{steps}");
                         // ReSharper disable once SwitchStatementMissingSomeCases
+                        CursorVisible = true;
                         switch (ReadKey(true).Key)
                         {
                             #region Keys
@@ -130,6 +106,8 @@ namespace LineDraw_Console
                             case D1:
                                 (int xo, int yo) = (CursorLeft, CursorTop);
                                 line.A = (CursorLeft, CursorTop);
+                                if (line.B.X < 0 || line.B.Y < 0)
+                                    line.B = (CursorLeft, CursorTop);
                                 Write('A');
                                 SetCursorPosition(xo, yo);
                                 break;
@@ -165,6 +143,15 @@ namespace LineDraw_Console
                             case C:
                                 fgColor = fgColor.Next();
                                 break;
+                            case R:
+                                Clear();
+//                                using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", false,
+//                                    Encoding.ASCII))
+//                                {
+//                                    w.Write(string.Empty);
+//                                }
+                                SetCursorPosition(0, 0);
+                                break;
                             case OemPlus:
                             case Add:
                                 if (steps < 1000)
@@ -176,18 +163,27 @@ namespace LineDraw_Console
                                     steps /= 10;
                                 break;
                             case Enter:
+                                CursorVisible = false;
+                                if (line.A.X < 0 || line.A.Y < 0 || line.B.X < 0 || line.B.Y < 0)
+                                {
+                                    WriteStatus("Some coordinates are not set!");
+                                    Thread.Sleep(1000);
+                                    break;
+                                }
+
                                 done = true;
-                                Task.Run(
-                                    () =>
-                                    {
-                                        using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", true,
-                                            Encoding.UTF8))
-                                        {
-                                            w.Write($"{line.A.X} {line.A.Y} {line.B.X} {line.B.Y} ");
-                                        }
-                                    });
+//                                Task.Run(
+//                                    () =>
+//                                    {
+//                                        using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", true,
+//                                            Encoding.ASCII))
+//                                        {
+//                                            w.Write($"{line.A.X} {line.A.Y} {line.B.X} {line.B.Y} ");
+//                                        }
+//                                    });
                                 break;
                             case Escape:
+                                CursorVisible = false;
                                 exitCode = 0;
                                 Exit(exitCode);
                                 break;
@@ -196,32 +192,9 @@ namespace LineDraw_Console
                         #endregion Keys
                     }
 
-                    double step = 1.0 / steps;
-                    // 2D vector between A and B
-                    (double dx, double dy) = (
-                        line.B.X - line.A.X,
-                        line.B.Y - line.A.Y
-                    );
-
                     WriteStatus("Drawing line...");
-                    ConsoleColor prev = ForegroundColor;
-                    ForegroundColor = fgColor;
-                    for (double i = 0; i <= 1.01; i += step)
-                    {
-                        // Calculate the coordinate according to the percentages
-                        (int x, int y) = (
-                            (int) Round(line.A.X + i * dx),
-                            (int) Round(line.A.Y + i * dy)
-                        );
-
-                        SetCursorPosition(x, y);
-                        Write('-');
-
-                        if (!delay) continue;
-                        Thread.Sleep(1000 / steps);
-                    }
-
-                    ForegroundColor = prev;
+                    DrawLine(line, steps, delay, fgColor);
+                    WriteStatus("");
                 }
                 catch (Exception e)
                 {
@@ -234,8 +207,38 @@ namespace LineDraw_Console
                     exitCode = 1;
                 }
 
+            CursorVisible = false;
             ReadKey(true);
             Exit(exitCode);
+        }
+
+        private static void DrawLine(Line line, int steps, bool delay, ConsoleColor fgColor)
+        {
+            double step = 1.0 / steps;
+            // 2D vector between A and B
+            (double dx, double dy) = (
+                line.B.X - line.A.X,
+                line.B.Y - line.A.Y
+            );
+
+            ConsoleColor prev = ForegroundColor;
+            ForegroundColor = fgColor;
+            for (double i = 0; i <= 1.01; i += step)
+            {
+                // Calculate the coordinate according to the percentages
+                (int x, int y) = (
+                    (int) Round(line.A.X + i * dx),
+                    (int) Round(line.A.Y + i * dy)
+                );
+
+                SetCursorPosition(x, y);
+                Write('█');
+
+                if (!delay) continue;
+                Thread.Sleep(1000 / steps);
+            }
+
+            ForegroundColor = prev;
         }
 
         private static void Main(string[] args)
