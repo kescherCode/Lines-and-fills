@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PaintStudio
+namespace FloodFill_Scanfill
 {
     public partial class Form1 : Form
     {
@@ -17,54 +18,10 @@ namespace PaintStudio
             InitializeComponent();
         }
 
-        static bool ISDrawn = false;
-        static Point p1 = new Point();
-        static Point p2 = new Point();
-        static int FillMethod = 0;
-        static Color c;
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            switch(FillMethod)
-            {
-                case 1:
-                    FloodFill((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
-                    break;
-                case 2:
-                    FloodFillQueue((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
-                    break;
-                case 3:
-                    ScanFill((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
-                    break;
-                case 4:
-                    ScanFillQueue((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
-                    break;
-                default:
-                    if(ISDrawn)
-                    {
-                        if (p1.IsEmpty)
-                            p1 = e.Location;
-                        else                           
-                        {
-                            p2 = e.Location;
-                            DrawLine((Bitmap)pictureBox1.Image, p1, p2, c);
-                            pictureBox1.Refresh();
-                            p1 = new Point();
-                            p2 = new Point();
-                        }
-                    }
-                    break;
-            }
-        }
-        static bool down = false;
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            down = !down;
-        }
 
-        private void pictureBox1_MouseHover(object sender, EventArgs e)
-        {
         }
-        #region FillMethoden
         private void FloodFill(Bitmap bmp, Point pt, Color targetColor, Color replacementColor)
         {
             Stack<Point> pixels = new Stack<Point>();
@@ -84,7 +41,7 @@ namespace PaintStudio
                         pixels.Push(new Point(a.X + 1, a.Y));
                         pixels.Push(new Point(a.X, a.Y - 1));
                         pixels.Push(new Point(a.X, a.Y + 1));
-                        //pictureBox1.Refresh();
+                        pictureBox1.Refresh();
                     }
                 }
             }
@@ -116,7 +73,7 @@ namespace PaintStudio
                 while (y1 < bmp.Height && bmp.GetPixel(temp.X, y1) == targetColor)
                 {
                     bmp.SetPixel(temp.X, y1, replacementColor);
-                    //pictureBox1.Refresh();
+                    pictureBox1.Refresh();
 
                     if (!spanLeft && temp.X > 0 && bmp.GetPixel(temp.X - 1, y1) == targetColor)
                     {
@@ -162,7 +119,7 @@ namespace PaintStudio
                         pixels.Enqueue(new Point(a.X + 1, a.Y));
                         pixels.Enqueue(new Point(a.X, a.Y - 1));
                         pixels.Enqueue(new Point(a.X, a.Y + 1));
-                        //pictureBox1.Refresh();
+                        pictureBox1.Refresh();
                     }
                 }
             }
@@ -194,7 +151,7 @@ namespace PaintStudio
                 while (y1 < bmp.Height && bmp.GetPixel(temp.X, y1) == targetColor)
                 {
                     bmp.SetPixel(temp.X, y1, replacementColor);
-                    //pictureBox1.Refresh();
+                    pictureBox1.Refresh();
 
                     if (!spanLeft && temp.X > 0 && bmp.GetPixel(temp.X - 1, y1) == targetColor)
                     {
@@ -221,88 +178,40 @@ namespace PaintStudio
             pictureBox1.Refresh();
 
         }
-        #endregion
-
-        private Bitmap DrawLine(Bitmap bitmap, Point p1, Point p2, Color c)
-        {
-            int dx = Math.Abs(p2.X - p1.X);
-            int sx = p1.X < p2.X ? 1 : -1;
-            int dy = Math.Abs(p2.Y - p1.Y);
-            int sy = p1.Y < p2.Y ? 1 : -1;
-            int err = (dx > dy ? dx : -dy) / 2;
-            int e2;
-            for (; ; )
-            {
-                bitmap.SetPixel(p1.X, p1.Y, c);
-                if (p1 == p2)
-                    break;
-                e2 = err;
-                if (e2 > -dx)
-                {
-                    err -= dy;
-                    p1.X += sx;
-                }
-                if (e2 < dy)
-                {
-                    err += dx;
-                    p1.Y += sy;
-                }
-            }
-            return bitmap;
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            FillMethod = 1;
+            FloodFill((Bitmap)pictureBox1.Image, new Point(100, 10), Color.White, Color.Yellow);
         }
-
         private void button2_Click(object sender, EventArgs e)
         {
-            FillMethod = 2;
+            ScanFill((Bitmap)pictureBox1.Image, new Point(100, 10), Color.White, Color.Blue);
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            FillMethod = 3;
+            FloodFillQueue((Bitmap)pictureBox1.Image, new Point(100, 100), Color.White, Color.Yellow);
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            FillMethod = 4;
+            ScanFillQueue((Bitmap)pictureBox1.Image, new Point(100, 10), Color.White, Color.Blue);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            FillMethod = 0;
-            ISDrawn = false;
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Title = "Please select the image";
+            fd.InitialDirectory = Directory.GetCurrentDirectory();
+            fd.ShowDialog();
+            string filename = fd.FileName;
+            pictureBox1.Image = new Bitmap(filename);
         }
 
-        private void button6_Click(object sender, EventArgs e)
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            colorDialog1.ShowDialog();
-            c = colorDialog1.Color;
-        }
-
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
-        {
-            //Graphics g = Graphics.FromImage(pictureBox1.Image);
-            //g.DrawLine
-            if (down == true)
-            {
-                ((Bitmap)pictureBox1.Image).SetPixel(e.X, e.Y, Color.Black);
-                pictureBox1.Refresh();
-            }
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            FillMethod = 0;
-            ISDrawn = true;
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
+            int x = e.X;
+            int y = e.Y;
+            Point p = e.Location;
         }
     }
 }
