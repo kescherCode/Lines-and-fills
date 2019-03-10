@@ -270,7 +270,7 @@ namespace LineDraw_Console
             var intArgs = listArgs.ToArray();
 
             if (validArgs)
-                Automated(ref intArgs, 10000, true);
+                Automated(ref intArgs, 10000, false);
             else Interactive();
         }
     }
