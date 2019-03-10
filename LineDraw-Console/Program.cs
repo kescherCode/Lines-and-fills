@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Threading;
 using static System.Console;
 using static System.ConsoleKey;
+using static System.Math;
 
 namespace LineDraw_Console
 {
     internal struct Line
     {
-        public readonly (int X, int Y) A;
-        public readonly (int X, int Y) B;
+        public readonly (double X, double Y) A;
+        public readonly (double X, double Y) B;
 
-        public Line((int X, int Y) a, (int X, int Y) b)
+        public Line((double X, double Y) a, (double X, double Y) b)
         {
             A = a;
             B = b;
@@ -36,28 +37,22 @@ namespace LineDraw_Console
 //            Thread.Sleep(3000);
                 var lines = new List<Line>();
 
-                ConsoleColor defaultBgColor = BackgroundColor;
-                ConsoleColor defaultFgColor = ForegroundColor;
-
-                bool done = false;
+                bool done = false, delay = true;
+                double steps = 10;
                 (int X, int Y)[] selection = {(0, 0), (0, 0)};
                 while (!done)
                 {
                     WriteStatus("".PadLeft(WindowWidth));
                     WriteStatus(
-                        $"Select points|C:{CursorLeft},{CursorTop}|A:{selection[0].X},{selection[0].Y}|B:{selection[1].X},{selection[1].Y}");
+                        $"Select points|C:{CursorLeft},{CursorTop}|A:{selection[0].X},{selection[0].Y}|B:{selection[1].X},{selection[1].Y}|Delay:{delay}|Steps:{steps}");
                     // ReSharper disable once SwitchStatementMissingSomeCases
                     switch (ReadKey(true).Key)
                     {
                         case D1:
                             selection[0] = (CursorLeft, CursorTop);
-                            Console.Write("o");
-                            Console.SetCursorPosition(selection[0].X, selection[0].Y);
                             break;
                         case D2:
                             selection[1] = (CursorLeft, CursorTop);
-                            Write("o");
-                            Console.SetCursorPosition(selection[1].X, selection[1].Y);
                             break;
                         case UpArrow:
                             if (CursorTop > 0)
@@ -79,6 +74,19 @@ namespace LineDraw_Console
                                 CursorLeft++;
                             else CursorLeft = 0;
                             break;
+                        case D:
+                            delay = !delay;
+                            break;
+                        case OemPlus:
+                        case Add:
+                            if (steps < 1000)
+                                steps *= 10;
+                            break;
+                        case OemMinus:
+                        case Subtract:
+                            if (steps > 10)
+                                steps /= 10;
+                            break;
                         case Enter:
                             lines.Add(new Line(selection[0], selection[1]));
                             done = true;
@@ -86,18 +94,23 @@ namespace LineDraw_Console
                     }
                 }
 
+                double step = 1 / steps;
                 foreach (Line line in lines)
-                    for (double i = 0; i <= 1.001; i+=0.001)
+                    for (double i = 0; i <= 1.01; i += step)
                     {
                         Thread.Sleep(1);
-                        (int x, int y) = (line.B.X - line.A.X, line.B.Y - line.A.Y);
-                        (int X, int Y) = ((int)(line.A.X + i * x), (int)(line.A.Y + i * y));
-                        SetCursorPosition(X, Y);
-                        Write('+');
+                        // 2D vector between A and B
+                        (double dx, double dy) = (line.B.X - line.A.X, line.B.Y - line.A.Y);
+                        // Calculate the coordinate according to the percentages
+                        (int x, int y) = ((int) Round(line.A.X + i * dx), (int) Round(line.A.Y + i * dy));
+                        
+                        SetCursorPosition(x, y);
+                        Write('-');
                     }
             }
             catch (Exception e)
             {
+                // Catch any previously unknown exceptions
                 SetCursorPosition(0, 0);
                 WriteLine(e.Message);
                 WriteLine(e.StackTrace);
