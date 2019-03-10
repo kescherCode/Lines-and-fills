@@ -60,16 +60,14 @@ namespace LineDraw_Console
         {
             var lines = new List<Line>();
 
-            for (int i = 0; i < args.Length;i+=4)
-            {
+            for (int i = 0; i < args.Length; i += 4)
                 lines.Add(
                     new Line(
-                (args[i], args[i + 1]),
-                (args[i + 2], args[i + 3])
-                ));
-            }
+                        (args[i], args[i + 1]),
+                        (args[i + 2], args[i + 3])
+                    ));
 
-            foreach (var line in lines)
+            foreach (Line line in lines)
             {
                 double step = 1.0 / steps;
                 // 2D vector between A and B
@@ -77,7 +75,7 @@ namespace LineDraw_Console
                     line.B.X - line.A.X,
                     line.B.Y - line.A.Y
                 );
-                
+
                 for (double i = 0; i <= 1.01; i += step)
                 {
                     // Calculate the coordinate according to the percentages
@@ -258,6 +256,7 @@ namespace LineDraw_Console
                         listArgs.Add(parsed);
                         continue;
                     }
+
                     validArgs = false;
                     WriteLine($"arg >{arg}< was invalid. Falling back to interactive mode...");
                     Thread.Sleep(3000);
