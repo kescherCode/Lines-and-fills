@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using static System.Console;
 using static System.ConsoleKey;
+using static System.Environment;
 using static System.Math;
 
 namespace LineDraw_Console
@@ -23,8 +24,7 @@ namespace LineDraw_Console
     {
         private static void WriteStatus(string msg)
         {
-            int x = CursorLeft;
-            int y = CursorTop;
+            int x = CursorLeft, y = CursorTop;
             SetCursorPosition(0, WindowHeight - 1);
             Write(msg);
             SetCursorPosition(x, y);
@@ -32,9 +32,12 @@ namespace LineDraw_Console
 
         private static void Main(string[] args)
         {
+            int exitCode = 0;
+            if (UserInteractive) Exit(exitCode);
             try
             {
-//            Thread.Sleep(3000);
+                WriteLine("Maximize the window and press any key to continue.");
+                ReadKey(true);
                 var lines = new List<Line>();
 
                 bool done = false, delay = true;
@@ -44,7 +47,11 @@ namespace LineDraw_Console
                 {
                     WriteStatus("".PadLeft(WindowWidth));
                     WriteStatus(
-                        $"Select points|C:{CursorLeft},{CursorTop}|A:{selection[0].X},{selection[0].Y}|B:{selection[1].X},{selection[1].Y}|Delay:{delay}|Steps:{steps}");
+                        $"Select points|C:{CursorLeft},{CursorTop}|" +
+                        $"A:{selection[0].X},{selection[0].Y}|" +
+                        $"B:{selection[1].X},{selection[1].Y}|" +
+                        $"Delay:{delay}|" +
+                        $"Steps:{steps}");
                     // ReSharper disable once SwitchStatementMissingSomeCases
                     switch (ReadKey(true).Key)
                     {
@@ -100,10 +107,16 @@ namespace LineDraw_Console
                     {
                         Thread.Sleep(1);
                         // 2D vector between A and B
-                        (double dx, double dy) = (line.B.X - line.A.X, line.B.Y - line.A.Y);
+                        (double dx, double dy) = (
+                            line.B.X - line.A.X,
+                            line.B.Y - line.A.Y
+                            );
                         // Calculate the coordinate according to the percentages
-                        (int x, int y) = ((int) Round(line.A.X + i * dx), (int) Round(line.A.Y + i * dy));
-                        
+                        (int x, int y) = (
+                            (int) Round(line.A.X + i * dx),
+                            (int) Round(line.A.Y + i * dy)
+                            );
+
                         SetCursorPosition(x, y);
                         Write('-');
                     }
@@ -114,9 +127,11 @@ namespace LineDraw_Console
                 SetCursorPosition(0, 0);
                 WriteLine(e.Message);
                 WriteLine(e.StackTrace);
+                exitCode = 1;
             }
 
             ReadKey(true);
+            Exit(exitCode);
         }
     }
 }
