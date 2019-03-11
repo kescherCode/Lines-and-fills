@@ -28,7 +28,7 @@ namespace Coding_Contest_2018
 
         private static void Main(string[] args)
         {
-            for (int f = 0; f < 2; f++)
+            for (int f = 0; f < 3; f++)
             {
                 which = f;
                 string filePathRead = $"../../level{level}_{f}.in";
@@ -39,9 +39,9 @@ namespace Coding_Contest_2018
                     string zeile = sr.ReadLine();
                     // ReSharper disable once PossibleNullReferenceException
                     var split = zeile.Split(' ');
-                        int row = int.Parse(split[0]);
-                        int col = int.Parse(split[1]);
-                        var grid = new int[row, col];
+                    int row = int.Parse(split[0]);
+                    int col = int.Parse(split[1]);
+                    var grid = new int[row, col];
 
                     while (!sr.EndOfStream)
                     {
@@ -64,15 +64,18 @@ namespace Coding_Contest_2018
                     }
 
                     Console.ReadKey(true);
-                    ÜbergeordneterCrawler(ref grid);
-                    var dict = new Dictionary<int, int>();
-                    for (int rw = 0; rw < grid.GetLength(0); rw++)
-                    for (int cw = 0; cw < grid.GetLength(0); cw++)
-                        if (grid[rw, cw] < 0)
-                        {
-                            if (!dict.ContainsKey(grid[rw, cw])) dict[grid[rw, cw]] = 0;
-                            dict[grid[rw, cw]]++;
-                        }
+                    if (f == 2)
+                        FloodFillQueue(ref grid, 11, 1, -10);
+                    else
+                        ÜbergeordneterCrawler(ref grid);
+                    //var dict = new Dictionary<int, int>();
+                    //for (int rw = 0; rw < grid.GetLength(0); rw++)
+                    //for (int cw = 0; cw < grid.GetLength(0); cw++)
+                    //    if (grid[rw, cw] < 0)
+                    //    {
+                    //        if (!dict.ContainsKey(grid[rw, cw])) dict[grid[rw, cw]] = 0;
+                    //        dict[grid[rw, cw]]++;
+                    //    }
 
                     //List<int> counts = new List<int>();
                     //foreach (var item in dict)
@@ -221,14 +224,14 @@ namespace Coding_Contest_2018
         private static void ÜbergeordneterCrawler(ref int[,] grid)
         {
             for (int r = 0; r < grid.GetLength(0); r++)
-            for (int c = 0; c < grid.GetLength(1); c++)
-                if (grid[r, c] > 0)
-                {
-                    zahl = grid[r, c];
-                    Suche(ref grid, r, c);
-                    Console.ReadKey(true);
-                    neg--;
-                }
+                for (int c = 0; c < grid.GetLength(1); c++)
+                    if (grid[r, c] > 0)
+                    {
+                        zahl = grid[r, c];
+                        Suche(ref grid, r, c);
+                        Console.ReadKey(true);
+                        neg--;
+                    }
 
             //GridAufteilen(grid);
         }
@@ -254,17 +257,68 @@ namespace Coding_Contest_2018
             }
         }
 
-        public static void GridAufteilen(int[,] grid)
+        //private static void SucheLab(ref int[,] grid, int row, int col, int i)
+        //{
+        //    while (true)
+        //    {
+        //        if (row < 0 || row > grid.GetLength(0) - 1) return;
+        //        if (col < 0 || col > grid.GetLength(0) - 1) return;
+        //        if (grid[row, col] <= 0) return;
+
+        //        grid[row, col] = i;
+        //        Console.SetCursorPosition(col * (grid[row, col].ToString().Length + 1), row);
+        //        Console.ForegroundColor = cl[Math.Abs(neg) % cl.Count];
+        //        Console.Write(i);
+        //        Console.ReadKey(true);
+        //        Console.ForegroundColor = ConsoleColor.White;
+        //        i--;
+        //        SucheLab(ref grid, row, col - 1, i);
+        //        SucheLab(ref grid, row, col + 1, i);
+        //        SucheLab(ref grid, row - 1, col, i);
+        //        SucheLab(ref grid, row + 1, col, i);
+        //    }
+        //}
+        private static void FloodFillQueue(ref int[,] grid, int row, int col, int i)
         {
-            using (var sw = new StreamWriter($"Ausgabe_{level}_{which}.txt", false))
+            Queue<Tuple<int, int, int>> pixels = new Queue<Tuple<int,int, int>>();
+            if (row < 0 || row > grid.GetLength(0) - 1) return;
+            if (col < 0 || col > grid.GetLength(0) - 1) return;
+            if (grid[row, col] <= 0) return;
+            pixels.Enqueue(new Tuple<int, int, int>(row, col, i));
+            Console.ForegroundColor = ConsoleColor.Red;
+            while (pixels.Count > 0)
             {
-                for (int r = 0; r < grid.GetLength(0); r++)
+                var a = pixels.Dequeue();
+                if (a.Item1 < grid.GetLength(0) && a.Item1 > 0 &&
+                        a.Item2 < grid.GetLength(0) && a.Item2 > 0)//make sure we stay within bounds
                 {
-                    for (int c = 0; c < grid.GetLength(0); c++)
-                        sw.Write(grid[r, c] == 0 ? "000 " : $"{grid[r, c]} ");
-                    sw.WriteLine();
+                    if (grid[a.Item1, a.Item2] > 0)
+                    {
+                        grid[a.Item1, a.Item2] = i;
+                        pixels.Enqueue(new Tuple<int, int, int>(a.Item1 - 1, a.Item2, a.Item3 - 1));
+                        pixels.Enqueue(new Tuple<int, int, int>(a.Item1 + 1, a.Item2, a.Item3 - 1));
+                        pixels.Enqueue(new Tuple<int, int, int>(a.Item1, a.Item2 - 1, a.Item3 - 1));
+                        pixels.Enqueue(new Tuple<int, int, int>(a.Item1, a.Item2 + 1, a.Item3 - 1));
+                        Console.SetCursorPosition(a.Item2 * (grid[a.Item1, a.Item2].ToString().Length + 1), a.Item1);
+                        Console.Write(a.Item3);
+                        Console.ReadKey(true);
+                    }
                 }
             }
+            Console.ForegroundColor = ConsoleColor.White;
+            return;
         }
+        //public static void GridAufteilen(int[,] grid)
+        //{
+        //    using (var sw = new StreamWriter($"Ausgabe_{level}_{which}.txt", false))
+        //    {
+        //        for (int r = 0; r < grid.GetLength(0); r++)
+        //        {
+        //            for (int c = 0; c < grid.GetLength(0); c++)
+        //                sw.Write(grid[r, c] == 0 ? "000 " : $"{grid[r, c]} ");
+        //            sw.WriteLine();
+        //        }
+        //    }
+        //}
     }
 }
