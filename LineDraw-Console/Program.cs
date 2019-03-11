@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.IO;
+using System.Text;
 using static System.Console;
 using static System.ConsoleColor;
 using static System.ConsoleKey;
 using static System.Environment;
 using static System.Math;
+using static System.PlatformID;
+using static System.Threading.Thread;
 
 namespace LineDraw_Console
 {
@@ -27,7 +30,7 @@ namespace LineDraw_Console
         {
             int x = CursorLeft, y = CursorTop;
             SetCursorPosition(0, WindowHeight - 1);
-            Write("".PadLeft(WindowWidth));
+            Write("".PadLeft(WindowWidth - 1));
             SetCursorPosition(0, WindowHeight - 1);
             Write(msg);
             SetCursorPosition(x, y);
@@ -46,7 +49,7 @@ namespace LineDraw_Console
         private static void FixConsoleColor()
         {
             var arr = (ConsoleColor[]) Enum.GetValues(ForegroundColor.GetType());
-            int j = Array.IndexOf(arr, ForegroundColor) - 1;
+            int j = Array.IndexOf(arr, ForegroundColor);
             if (j >= 0) return;
 
             ForegroundColor = White;
@@ -55,6 +58,12 @@ namespace LineDraw_Console
 
         private static void Automated(ref int[] args, int steps, bool delay)
         {
+            if (OSVersion.Platform == Win32NT)
+            {
+                BufferHeight = WindowHeight;
+                BufferWidth = WindowWidth;
+            }
+
             CursorVisible = false;
             var lines = new List<Line>();
 
@@ -73,6 +82,12 @@ namespace LineDraw_Console
 
         private static void Interactive()
         {
+            if (OSVersion.Platform == Win32NT)
+            {
+                BufferHeight = WindowHeight;
+                BufferWidth = WindowWidth;
+            }
+
             int exitCode = 0;
             Clear();
             WriteLine("Maximize the window and press any key to continue.");
@@ -108,13 +123,13 @@ namespace LineDraw_Console
                                 line.A = (CursorLeft, CursorTop);
                                 if (line.B.X < 0 || line.B.Y < 0)
                                     line.B = (CursorLeft, CursorTop);
-                                Write('A');
+                                Write("A\b");
                                 SetCursorPosition(xo, yo);
                                 break;
                             case D2:
                                 (xo, yo) = (CursorLeft, CursorTop);
                                 line.B = (CursorLeft, CursorTop);
-                                Write('B');
+                                Write("B\b");
                                 SetCursorPosition(xo, yo);
                                 break;
                             case UpArrow:
@@ -145,11 +160,17 @@ namespace LineDraw_Console
                                 break;
                             case R:
                                 Clear();
-//                                using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", false,
-//                                    Encoding.ASCII))
-//                                {
-//                                    w.Write(string.Empty);
-//                                }
+                                // using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", false,
+                                //     Encoding.ASCII))
+                                // {
+                                //     w.Write(string.Empty);
+                                // }
+                                if (OSVersion.Platform == Win32NT)
+                                {
+                                    BufferHeight = WindowHeight;
+                                    BufferWidth = WindowWidth;
+                                }
+
                                 SetCursorPosition(0, 0);
                                 break;
                             case OemPlus:
@@ -167,7 +188,7 @@ namespace LineDraw_Console
                                 if (line.A.X < 0 || line.A.Y < 0 || line.B.X < 0 || line.B.Y < 0)
                                 {
                                     WriteStatus("Some coordinates are not set!");
-                                    Thread.Sleep(1000);
+                                    Sleep(1000);
                                     break;
                                 }
 
@@ -223,7 +244,7 @@ namespace LineDraw_Console
 
             ConsoleColor prev = ForegroundColor;
             ForegroundColor = fgColor;
-            for (double i = 0; i <= 1.01; i += step)
+            for (double i = 0;; i += step)
             {
                 // Calculate the coordinate according to the percentages
                 (int x, int y) = (
@@ -234,8 +255,9 @@ namespace LineDraw_Console
                 SetCursorPosition(x, y);
                 Write('█');
 
+                if (x == line.B.X && y == line.B.Y) break;
                 if (!delay) continue;
-                Thread.Sleep(1000 / steps);
+                Sleep(1000 / steps);
             }
 
             ForegroundColor = prev;
@@ -262,7 +284,7 @@ namespace LineDraw_Console
 
                     validArgs = false;
                     WriteLine($"arg >{arg}< was invalid. Falling back to interactive mode...");
-                    Thread.Sleep(3000);
+                    Sleep(3000);
                     break;
                 }
             }
