@@ -22,8 +22,8 @@ namespace Coding_Contest_2018
             for (int f = 0; f < 2; f++)
             {
                 which = f;
-                string filePathRead = $"level{level}_{f}.in";
-                string filePathWrite = $"level{level}_{f}_out.txt";
+                string filePathRead = $"../../level{level}_{f}.in";
+                string filePathWrite = $"../../level{level}_{f}_out.txt";
                 int col = 0;
                 int row = 0;
                 int anz = 0;
