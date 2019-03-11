@@ -1,80 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
+
 namespace Coding_Contest_2018
 {
-    class Program
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    internal static class Program
     {
-        static int level = 2;
-        static int which = 1;
-        static int größe = 3;
-        static List<ConsoleColor> cl = new List<ConsoleColor>()
+        private const int level = 2;
+        private static int which = 1;
+        private const int größe = 3;
+
+        private static readonly List<ConsoleColor> cl = new List<ConsoleColor>
         {
-            ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.DarkBlue, ConsoleColor.DarkCyan, ConsoleColor.DarkGray, ConsoleColor.DarkGreen,
-            ConsoleColor.DarkMagenta, ConsoleColor.DarkRed, ConsoleColor.DarkYellow, ConsoleColor.Green, ConsoleColor.Magenta,
+            ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.DarkBlue, ConsoleColor.DarkCyan, ConsoleColor.DarkGray,
+            ConsoleColor.DarkGreen,
+            ConsoleColor.DarkMagenta, ConsoleColor.DarkRed, ConsoleColor.DarkYellow, ConsoleColor.Green,
+            ConsoleColor.Magenta,
             ConsoleColor.Red, ConsoleColor.Yellow
         };
-        static void Main(string[] args)
+
+        //private static int neg = -int.Parse(100000000000.ToString().Substring(0, größe - 1));
+        private static int neg = -10;
+        private static int zahl = 10;
+
+        private static void Main(string[] args)
         {
             for (int f = 0; f < 2; f++)
             {
                 which = f;
                 string filePathRead = $"../../level{level}_{f}.in";
                 string filePathWrite = $"../../level{level}_{f}_out.txt";
-                int col = 0;
-                int row = 0;
-                int anz = 0;
-                int[,] grid = new int[1, 1];
-                string[] split;
-                int r = 0, c = 0;
-                using (StreamReader sr = new StreamReader(filePathRead))
+                int r = 0;
+                using (var sr = new StreamReader(filePathRead))
                 {
                     string zeile = sr.ReadLine();
-                    if (anz == 0)
-                    {
-                        split = zeile.Split(' ');
-                        row = int.Parse(split[0]);
-                        col = int.Parse(split[1]);
-                        grid = new int[row, col];
-                    }
+                    // ReSharper disable once PossibleNullReferenceException
+                    var split = zeile.Split(' ');
+                        int row = int.Parse(split[0]);
+                        int col = int.Parse(split[1]);
+                        var grid = new int[row, col];
+
                     while (!sr.EndOfStream)
                     {
-                        zeile = sr.ReadLine();                        
+                        zeile = sr.ReadLine();
+                        // ReSharper disable once PossibleNullReferenceException
                         split = zeile.Split(' ');
                         for (int i = 0; i < split.Length; i++)
                         {
-                            if(split[i].Length < größe)
-                            {
+                            if (split[i].Length < größe)
                                 do
                                 {
                                     split[i] += "0";
                                 } while (split[i].Length != größe);
-                            }
+
                             grid[r, i] = int.Parse(split[i]);
                         }
-                        Console.WriteLine(String.Join(" ", split));
+
+                        Console.WriteLine(string.Join(" ", split));
                         r++;
                     }
+
                     Console.ReadKey(true);
                     ÜbergeordneterCrawler(ref grid);
-                    Dictionary<int, int> dict = new Dictionary<int, int>();
+                    var dict = new Dictionary<int, int>();
                     for (int rw = 0; rw < grid.GetLength(0); rw++)
-                    {
-                        for (int cw = 0; cw < grid.GetLength(0); cw++)
+                    for (int cw = 0; cw < grid.GetLength(0); cw++)
+                        if (grid[rw, cw] < 0)
                         {
-                            if (grid[rw, cw] < 0)
-                            {
-                                if (!dict.ContainsKey(grid[rw, cw]))
-                                {
-                                    dict[grid[rw, cw]] = 0;
-                                }
-                                dict[grid[rw, cw]]++;
-                            }
+                            if (!dict.ContainsKey(grid[rw, cw])) dict[grid[rw, cw]] = 0;
+                            dict[grid[rw, cw]]++;
                         }
-                    }
+
                     //List<int> counts = new List<int>();
                     //foreach (var item in dict)
                     //{
@@ -100,9 +99,12 @@ namespace Coding_Contest_2018
                     //    //Console.WriteLine();
                     //}
                 }
+
                 Console.Clear();
             }
-            #region
+
+            #region AAAAAAAAAAAAAAAAAA
+
             /*
             int aus = 0;
             int house = 0;
@@ -206,76 +208,63 @@ namespace Coding_Contest_2018
                     ÜbergeordneterCrawler(höhen[h[ha]]);
             }
             */
+
             #endregion
-            ConsoleKey k = Console.ReadKey(true).Key;
+
+            ConsoleKey k;
             do
             {
                 k = Console.ReadKey(true).Key;
             } while (k != ConsoleKey.Escape);
         }
 
-        static int neg = -int.Parse(100000000000.ToString().Substring(0, größe - 1));
-        static int zahl = 10;
-        public static void ÜbergeordneterCrawler(ref int[,] grid)
+        private static void ÜbergeordneterCrawler(ref int[,] grid)
         {
             for (int r = 0; r < grid.GetLength(0); r++)
-            {
-                for (int c = 0; c < grid.GetLength(1); c++)
+            for (int c = 0; c < grid.GetLength(1); c++)
+                if (grid[r, c] > 0)
                 {
-                    if (grid[r, c] > 0)
-                    {
-                        zahl = grid[r, c];
-                        Suche(ref grid, r, c);
-                        Console.ReadKey(true);
-                        neg--;
-                    }
+                    zahl = grid[r, c];
+                    Suche(ref grid, r, c);
+                    Console.ReadKey(true);
+                    neg--;
                 }
-            }
+
             //GridAufteilen(grid);
         }
 
-        public static void Suche(ref int[,] grid, int row, int col)
+        private static void Suche(ref int[,] grid, int row, int col)
         {
-            if (row < 0 || row > grid.GetLength(0) - 1)
-                return;
-            if (col < 0 || col > grid.GetLength(0) - 1)
-                return;
-            if (grid[row, col] == zahl)
+            while (true)
             {
+                if (row < 0 || row > grid.GetLength(0) - 1) return;
+                if (col < 0 || col > grid.GetLength(0) - 1) return;
+                if (grid[row, col] != zahl) return;
+
                 grid[row, col] = neg;
                 Console.SetCursorPosition(col * (grid[row, col].ToString().Length + 1), row);
                 Console.ForegroundColor = cl[Math.Abs(neg) % cl.Count];
                 Console.Write(neg);
-                System.Threading.Thread.Sleep(10);
+                Thread.Sleep(10);
                 Console.ForegroundColor = ConsoleColor.White;
                 Suche(ref grid, row, col - 1);
                 Suche(ref grid, row, col + 1);
                 Suche(ref grid, row - 1, col);
-                Suche(ref grid, row + 1, col);
+                row = row + 1;
             }
         }
 
         public static void GridAufteilen(int[,] grid)
         {
-            using (StreamWriter sw = new StreamWriter($"Ausgabe_{level}_{which}.txt", false))
+            using (var sw = new StreamWriter($"Ausgabe_{level}_{which}.txt", false))
             {
-                string output = "";
                 for (int r = 0; r < grid.GetLength(0); r++)
                 {
                     for (int c = 0; c < grid.GetLength(0); c++)
-                    {
-                        if (grid[r, c] == 0)
-                            sw.Write($"000 ");
-                        else
-                            sw.Write($"{grid[r, c]} ");
-
-                    }
+                        sw.Write(grid[r, c] == 0 ? "000 " : $"{grid[r, c]} ");
                     sw.WriteLine();
                 }
-
             }
-
         }
     }
 }
-
