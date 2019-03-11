@@ -42,6 +42,7 @@
             this.button7 = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.button9 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -165,11 +166,23 @@
             this.label1.TabIndex = 10;
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
+            // button9
+            // 
+            this.button9.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button9.Location = new System.Drawing.Point(1807, 532);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(105, 59);
+            this.button9.TabIndex = 11;
+            this.button9.Text = "SAVE";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1924, 1055);
+            this.Controls.Add(this.button9);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button8);
             this.Controls.Add(this.button7);
@@ -204,6 +217,7 @@
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button button9;
     }
 }
 

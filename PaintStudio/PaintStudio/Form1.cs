@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
+
 namespace PaintStudio
 {
     public partial class Form1 : Form
@@ -355,6 +357,15 @@ namespace PaintStudio
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            string f = Directory.GetCurrentDirectory();
+            f = f.Substring(0, f.IndexOf("bin"));
+            string s = DateTime.Now.ToString().Replace(':','_').Replace('.', '_').Replace(' ', '_');
+            string p = $"{f}{s}.png";
+            ((Bitmap)pictureBox1.Image).Save(p);
         }
     }
 }
