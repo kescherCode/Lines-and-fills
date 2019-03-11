@@ -54,7 +54,7 @@ namespace LineDraw_Console
             BackgroundColor = Black;
         }
 
-        private static void Automated(ref int[] args, int steps, bool delay)
+        private static void Automated(ref int[] args, bool delay)
         {
             if (OSVersion.Platform == Win32NT)
             {
@@ -74,7 +74,7 @@ namespace LineDraw_Console
                         (args[i + 2], args[i + 3])
                     ));
 
-            foreach (Line line in lines) DrawLine(line, steps, delay, ForegroundColor);
+            foreach (Line line in lines) DrawLine(line, delay, ForegroundColor);
 
             ReadKey(true);
             Exit(0);
@@ -95,7 +95,6 @@ namespace LineDraw_Console
             Clear();
 
             bool exit = false, delay = true;
-            int steps = 10;
 
             ConsoleColor fgColor = ForegroundColor;
             while (!exit)
@@ -110,8 +109,7 @@ namespace LineDraw_Console
                             $"A:{line.A.X},{line.B.Y}|" +
                             $"B:{line.B.X},{line.B.Y}|" +
                             $"Color:{fgColor}|" +
-                            $"Delay:{delay}|" +
-                            $"Steps:{steps}");
+                            $"Delay:{(delay ? "on" : "off")}|");
                         // ReSharper disable once SwitchStatementMissingSomeCases
                         CursorVisible = true;
                         switch (ReadKey(true).Key)
@@ -175,16 +173,6 @@ namespace LineDraw_Console
                                 line = new Line((-1, -1), (-1, -1));
                                 SetCursorPosition(0, 0);
                                 break;
-                            case OemPlus:
-                            case Add:
-                                if (steps < 1000)
-                                    steps *= 10;
-                                break;
-                            case OemMinus:
-                            case Subtract:
-                                if (steps > 10)
-                                    steps /= 10;
-                                break;
                             case Enter:
                                 CursorVisible = false;
                                 if (line.A.X < 0 || line.A.Y < 0 || line.B.X < 0 || line.B.Y < 0)
@@ -216,7 +204,7 @@ namespace LineDraw_Console
                     }
 
                     WriteStatus("Drawing line...");
-                    DrawLine(line, steps, delay, fgColor);
+                    DrawLine(line, delay, fgColor);
                     WriteStatus("");
                 }
                 catch (Exception e)
@@ -235,14 +223,15 @@ namespace LineDraw_Console
             Exit(exitCode);
         }
 
-        private static void DrawLine(Line line, int steps, bool delay, ConsoleColor fgColor)
+        private static void DrawLine(Line line, bool delay, ConsoleColor fgColor)
         {
-            double step = 1.0 / steps;
             // 2D vector between A and B
             (double dx, double dy) = (
                 line.B.X - line.A.X,
                 line.B.Y - line.A.Y
             );
+            double step = 1.0 / Sqrt(dx * dx + dy * dy);
+            
 
             ConsoleColor prev = ForegroundColor;
             ForegroundColor = fgColor;
@@ -261,7 +250,7 @@ namespace LineDraw_Console
                 if (x == line.B.X && y == line.B.Y) break;
                 // ReSharper restore CompareOfFloatsByEqualityOperator
                 if (!delay) continue;
-                Sleep(1000 / steps);
+                Sleep(100);
             }
 
             ForegroundColor = prev;
@@ -296,7 +285,7 @@ namespace LineDraw_Console
             var intArgs = listArgs.ToArray();
 
             if (validArgs)
-                Automated(ref intArgs, 10000, false);
+                Automated(ref intArgs, true);
             else Interactive();
         }
     }
