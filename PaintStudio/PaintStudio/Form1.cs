@@ -27,16 +27,16 @@ namespace PaintStudio
             switch(FillMethod)
             {
                 case 1:
-                    FloodFill((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
+                    FloodFill((Bitmap)pictureBox1.Image, e.Location, c);
                     break;
                 case 2:
-                    FloodFillQueue((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
+                    FloodFillQueue((Bitmap)pictureBox1.Image, e.Location, c);
                     break;
                 case 3:
-                    ScanFill((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
+                    ScanFill((Bitmap)pictureBox1.Image, e.Location, c);
                     break;
                 case 4:
-                    ScanFillQueue((Bitmap)pictureBox1.Image, e.Location, ((Bitmap)pictureBox1.Image).GetPixel(e.X, e.Y), c);
+                    ScanFillQueue((Bitmap)pictureBox1.Image, e.Location, c);
                     break;
                 default:
                     if(ISDrawn)
@@ -65,10 +65,15 @@ namespace PaintStudio
         {
         }
         #region FillMethoden
-        private void FloodFill(Bitmap bmp, Point pt, Color targetColor, Color replacementColor)
+        private void FloodFill(Bitmap bmp, Point pt, Color replacementColor)
         {
             Stack<Point> pixels = new Stack<Point>();
-            targetColor = bmp.GetPixel(pt.X, pt.Y);
+            Color targetColor = bmp.GetPixel(pt.X, pt.Y);
+
+            if (targetColor.R == replacementColor.R &&
+                targetColor.G == replacementColor.G &&
+                targetColor.B == replacementColor.B) return;
+
             pixels.Push(pt);
 
             while (pixels.Count > 0)
@@ -91,13 +96,13 @@ namespace PaintStudio
             pictureBox1.Refresh(); //refresh our main picture box
             return;
         }
-        private void ScanFill(Bitmap bmp, Point pt, Color targetColor, Color replacementColor)
+        private void ScanFill(Bitmap bmp, Point pt, Color replacementColor)
         {
-            targetColor = bmp.GetPixel(pt.X, pt.Y);
-            if (targetColor.ToArgb().Equals(replacementColor.ToArgb()))
-            {
-                replacementColor = Color.Crimson;
-            }
+            Color targetColor = bmp.GetPixel(pt.X, pt.Y);
+
+            if (targetColor.R == replacementColor.R &&
+                targetColor.G == replacementColor.G &&
+                targetColor.B == replacementColor.B) return;
 
             Stack<Point> pixels = new Stack<Point>();
 
@@ -143,10 +148,15 @@ namespace PaintStudio
             pictureBox1.Refresh();
 
         }
-        private void FloodFillQueue(Bitmap bmp, Point pt, Color targetColor, Color replacementColor)
+        private void FloodFillQueue(Bitmap bmp, Point pt, Color replacementColor)
         {
             Queue<Point> pixels = new Queue<Point>();
-            targetColor = bmp.GetPixel(pt.X, pt.Y);
+            Color targetColor = bmp.GetPixel(pt.X, pt.Y);
+
+            if (targetColor.R == replacementColor.R &&
+                targetColor.G == replacementColor.G &&
+                targetColor.B == replacementColor.B) return;
+
             pixels.Enqueue(pt);
 
             while (pixels.Count > 0)
@@ -169,13 +179,13 @@ namespace PaintStudio
             pictureBox1.Refresh(); //refresh our main picture box
             return;
         }
-        private void ScanFillQueue(Bitmap bmp, Point pt, Color targetColor, Color replacementColor)
+        private void ScanFillQueue(Bitmap bmp, Point pt, Color replacementColor)
         {
-            targetColor = bmp.GetPixel(pt.X, pt.Y);
-            if (targetColor.ToArgb().Equals(replacementColor.ToArgb()))
-            {
-                replacementColor = Color.Crimson;
-            }
+            Color targetColor = bmp.GetPixel(pt.X, pt.Y);
+
+            if (targetColor.R == replacementColor.R &&
+                targetColor.G == replacementColor.G &&
+                targetColor.B == replacementColor.B) return;
 
             Queue<Point> pixels = new Queue<Point>();
 
