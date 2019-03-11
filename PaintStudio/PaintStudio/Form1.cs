@@ -16,7 +16,7 @@ namespace PaintStudio
         {
             InitializeComponent();
         }
-
+        static bool DoublePoints = false;
         static bool ISDrawn = false;
         static Point p1 = new Point();
         static Point p2 = new Point();
@@ -24,7 +24,7 @@ namespace PaintStudio
         static Color c;
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            switch(FillMethod)
+            switch (FillMethod)
             {
                 case 1:
                     FloodFill((Bitmap)pictureBox1.Image, e.Location, c);
@@ -39,16 +39,19 @@ namespace PaintStudio
                     ScanFillQueue((Bitmap)pictureBox1.Image, e.Location, c);
                     break;
                 default:
-                    if(ISDrawn)
+                    if (ISDrawn)
                     {
                         if (p1.IsEmpty)
                             p1 = e.Location;
-                        else                           
+                        else
                         {
                             p2 = e.Location;
                             DrawLine((Bitmap)pictureBox1.Image, p1, p2, c);
                             pictureBox1.Refresh();
-                            p1 = new Point();
+                            if (!DoublePoints)
+                                p1 = new Point();
+                            else
+                                p1 = p2;
                             p2 = new Point();
                         }
                     }
@@ -264,27 +267,36 @@ namespace PaintStudio
         private void button1_Click(object sender, EventArgs e)
         {
             FillMethod = 1;
+            ISDrawn = false;
+            DoublePoints = false;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             FillMethod = 2;
+            ISDrawn = false;
+            DoublePoints = false;
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
             FillMethod = 3;
+            ISDrawn = false;
+            DoublePoints = false;
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
             FillMethod = 4;
+            ISDrawn = false;
+            DoublePoints = false;
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
             FillMethod = 0;
             ISDrawn = false;
+            DoublePoints = false;
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -308,6 +320,17 @@ namespace PaintStudio
         {
             FillMethod = 0;
             ISDrawn = true;
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            ISDrawn = true;
+            DoublePoints = true;
         }
     }
 }
