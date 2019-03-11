@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using static System.Console;
 using static System.ConsoleColor;
 using static System.ConsoleKey;
@@ -63,6 +61,8 @@ namespace LineDraw_Console
                 BufferHeight = WindowHeight;
                 BufferWidth = WindowWidth;
             }
+
+            Clear();
 
             CursorVisible = false;
             var lines = new List<Line>();
@@ -160,17 +160,19 @@ namespace LineDraw_Console
                                 break;
                             case R:
                                 Clear();
-                                // using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", false,
-                                //     Encoding.ASCII))
-                                // {
-                                //     w.Write(string.Empty);
-                                // }
+                                //using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", false,
+                                //    Encoding.ASCII))
+                                //{
+                                //    w.Write(string.Empty);
+                                //}
+
                                 if (OSVersion.Platform == Win32NT)
                                 {
                                     BufferHeight = WindowHeight;
                                     BufferWidth = WindowWidth;
                                 }
 
+                                line = new Line((-1, -1), (-1, -1));
                                 SetCursorPosition(0, 0);
                                 break;
                             case OemPlus:
@@ -193,15 +195,15 @@ namespace LineDraw_Console
                                 }
 
                                 done = true;
-//                                Task.Run(
-//                                    () =>
-//                                    {
-//                                        using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", true,
-//                                            Encoding.ASCII))
-//                                        {
-//                                            w.Write($"{line.A.X} {line.A.Y} {line.B.X} {line.B.Y} ");
-//                                        }
-//                                    });
+                                //Task.Run(
+                                //    () =>
+                                //    {
+                                //        using (var w = new StreamWriter($"{Path.GetTempPath()}/coords.txt", true,
+                                //            Encoding.ASCII))
+                                //        {
+                                //            w.Write($"{line.A.X} {line.A.Y} {line.B.X} {line.B.Y} ");
+                                //        }
+                                //    });
                                 break;
                             case Escape:
                                 CursorVisible = false;
