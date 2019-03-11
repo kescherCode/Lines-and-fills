@@ -255,7 +255,9 @@ namespace LineDraw_Console
                 SetCursorPosition(x, y);
                 Write('█');
 
+                // ReSharper disable CompareOfFloatsByEqualityOperator
                 if (x == line.B.X && y == line.B.Y) break;
+                // ReSharper restore CompareOfFloatsByEqualityOperator
                 if (!delay) continue;
                 Sleep(1000 / steps);
             }
