@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using System.Diagnostics;
 namespace PaintStudio
 {
     public partial class Form1 : Form
@@ -16,14 +16,23 @@ namespace PaintStudio
         {
             InitializeComponent();
         }
+        static Stopwatch st = new Stopwatch();
         static bool DoublePoints = false;
         static bool ISDrawn = false;
         static Point p1 = new Point();
         static Point p2 = new Point();
         static int FillMethod = 0;
         static Color c;
+        static Action a = null;
+
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
+            if(FillMethod > 0)
+            {
+            st.Reset();
+            st.Start();
+            }
+
             switch (FillMethod)
             {
                 case 1:
@@ -57,11 +66,14 @@ namespace PaintStudio
                     }
                     break;
             }
+            if(FillMethod > 0)
+            {
+            st.Stop();
+            label1.Text = (st.ElapsedMilliseconds / 1000d).ToString();
+            }
         }
-        static bool down = false;
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            down = !down;
         }
 
         private void pictureBox1_MouseHover(object sender, EventArgs e)
@@ -266,30 +278,26 @@ namespace PaintStudio
 
         private void button1_Click(object sender, EventArgs e)
         {
+            Reset();
             FillMethod = 1;
-            ISDrawn = false;
-            DoublePoints = false;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
+            Reset();
             FillMethod = 2;
-            ISDrawn = false;
-            DoublePoints = false;
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
+            Reset();
             FillMethod = 3;
-            ISDrawn = false;
-            DoublePoints = false;
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
+            Reset();
             FillMethod = 4;
-            ISDrawn = false;
-            DoublePoints = false;
         }
 
         private void button5_Click(object sender, EventArgs e)
@@ -297,6 +305,8 @@ namespace PaintStudio
             FillMethod = 0;
             ISDrawn = false;
             DoublePoints = false;
+            p1 = new Point();
+            p2 = new Point();
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -307,19 +317,15 @@ namespace PaintStudio
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
-            //Graphics g = Graphics.FromImage(pictureBox1.Image);
-            //g.DrawLine
-            if (down == true)
-            {
-                ((Bitmap)pictureBox1.Image).SetPixel(e.X, e.Y, Color.Black);
-                pictureBox1.Refresh();
-            }
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            FillMethod = 0;
-            ISDrawn = true;
+            if(!ISDrawn)
+            {
+                Reset();
+                ISDrawn = true;
+            }
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -329,8 +335,26 @@ namespace PaintStudio
 
         private void button8_Click(object sender, EventArgs e)
         {
-            ISDrawn = true;
-            DoublePoints = true;
+            if(!DoublePoints)
+            {
+                Reset();
+                ISDrawn = true;
+                DoublePoints = true;
+            }
+
+        }
+        private void Reset()
+        {
+            p1 = new Point();
+            p2 = new Point();
+            ISDrawn = false;
+            DoublePoints = false;
+            FillMethod = 0;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
