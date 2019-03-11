@@ -83,5 +83,8 @@
   <ItemGroup>
     <None Include="bin\Debug\UnfilledCanvas.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="UnfilledCanvas.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
