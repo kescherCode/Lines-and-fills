@@ -363,8 +363,9 @@ namespace PaintStudio
         {
             string f = Directory.GetCurrentDirectory();
             f = f.Substring(0, f.IndexOf("bin"));
-            string s = DateTime.Now.ToString().Replace(':','_').Replace('.', '_').Replace(' ', '_');
-            string p = $"{f}{s}.png";
+            //string s = DateTime.Now.ToString().Replace(':','_').Replace('.', '_').Replace(' ', '_');
+            string d = $"{DateTime.Now:dd-hh-mm-ss}";
+            string p = $"{f}{d}.png";
             ((Bitmap)pictureBox1.Image).Save(p);
         }
     }
