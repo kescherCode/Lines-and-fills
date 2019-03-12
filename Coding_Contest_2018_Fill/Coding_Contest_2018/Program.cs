@@ -30,6 +30,7 @@ namespace Coding_Contest_2018
         {
             for (int f = 0; f < 3; f++)
             {
+                if (f == 1) continue;
                 which = f;
                 string filePathRead = $"../../level{level}_{f}.in";
                 string filePathWrite = $"../../level{level}_{f}_out.txt";
